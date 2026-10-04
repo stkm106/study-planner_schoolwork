@@ -10,7 +10,7 @@ name: TEXT (Tên môn: e.g. "Lập trình Di động")
 color_hex: TEXT (Mã màu hiển thị lên Calendar: e.g. "#FF5722")
 ```
 
-3. Bảng assignments (Quản lý Bài tập)
+2. Bảng assignments (Quản lý Bài tập)
 ```
 id: INTEGER PRIMARY KEY AUTOINCREMENT
 course_id: INTEGER (Khóa ngoại trỏ đến courses.id, cho phép NULL nếu bài tập chung)
@@ -22,7 +22,7 @@ status: INTEGER (0 = Chưa xong/Pending, 1 = Đã xong/Completed) — Phục v�
 estimated_hours: REAL (Thời gian ước tính để hoàn thành, dùng cho Auto Schedule của Người 2)
 ```
 
-5. Bảng examinations (Lịch thi)
+3. Bảng examinations (Lịch thi)
 ```
 id: INTEGER PRIMARY KEY AUTOINCREMENT
 course_id: INTEGER (Khóa ngoại trỏ đến courses.id)
