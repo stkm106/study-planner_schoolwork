@@ -1,6 +1,56 @@
 # Smart Study Planner and Assignment Reminder
 An application that helps students organize courses, assignments, examinations, and study schedules. The system supports reminders, calendar-based planning, progress tracking, and study-time management.
 
+# Entities
+1. Bảng courses (Quản lý Môn học)
+```
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+code: TEXT (Mã môn: e.g. "PRM392")
+name: TEXT (Tên môn: e.g. "Lập trình Di động")
+color_hex: TEXT (Mã màu hiển thị lên Calendar: e.g. "#FF5722")
+```
+
+3. Bảng assignments (Quản lý Bài tập)
+```
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+course_id: INTEGER (Khóa ngoại trỏ đến courses.id, cho phép NULL nếu bài tập chung)
+title: TEXT (Tên bài tập/đồ án)
+description: TEXT (Mô tả chi tiết)
+deadline: TEXT (Định dạng ISO-8601: YYYY-MM-DD HH:MM:SS)
+priority: INTEGER (Mức độ ưu tiên: 1 = Thấp, 2 = Trung bình, 3 = Cao)
+status: INTEGER (0 = Chưa xong/Pending, 1 = Đã xong/Completed) — Phục vụ biểu đồ của bạn (Người 3)
+estimated_hours: REAL (Thời gian ước tính để hoàn thành, dùng cho Auto Schedule của Người 2)
+```
+
+5. Bảng examinations (Lịch thi)
+```
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+course_id: INTEGER (Khóa ngoại trỏ đến courses.id)
+title: TEXT (Tên kỳ thi: e.g. "Thi giữa kỳ", "Thi lý thuyết")
+exam_date: TEXT (YYYY-MM-DD HH:MM:SS)
+location: TEXT (Địa điểm/Phòng thi)
+duration_minutes: INTEGER (Thời gian làm bài: e.g. 60, 90 phút)
+```
+
+4. Bảng study_schedules (Lịch học ngày/tuần)
+```
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+course_id: INTEGER (Khóa ngoại trỏ đến courses.id, nullable)
+day_of_week: INTEGER (1 = Chủ Nhật, 2 = Thứ 2, ..., 7 = Thứ 7)
+start_time: TEXT (HH:MM)
+end_time: TEXT (HH:MM)
+is_auto_generated: INTEGER (0 = Do sinh viên tự tạo, 1 = Do hệ thống gợi ý)
+```
+
+5. Bảng study_logs (Nhật ký Pomodoro)
+```
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+assignment_id: INTEGER (Khóa ngoại trỏ đến assignments.id, nullable nếu học môn chung mà không chọn bài tập cụ thể)
+session_type: TEXT ("POMODORO" hoặc "MANUAL")
+duration_minutes: INTEGER (Số phút đã học thực tế: e.g. 25, 50...)
+completed_at: TEXT (Ngày giờ hoàn thành: YYYY-MM-DD HH:MM:SS) — Cực kỳ quan trọng để bạn query xuất biểu đồ tuần/tháng!
+```
+
 # 📁 Project Directory Structure (Android Java + SQLite)
 ```text
 app/
