@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_academic"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:title="Môn học" />
+    <item
+        android:id="@+id/nav_calendar"
+        android:icon="@android:drawable/ic_menu_my_calendar"
+        android:title="Lịch học" />
+    <item
+        android:id="@+id/nav_productivity"
+        android:icon="@android:drawable/ic_menu_today"
+        android:title="Pomodoro &amp; Thống kê" />
+    <item
+        android:id="@+id/nav_ocr_sync"
+        android:icon="@android:drawable/ic_menu_camera"
+        android:title="OCR &amp; Sync" />
+</menu>
