@@ -44,6 +44,7 @@ completed_at: TEXT (Ngày giờ hoàn thành: YYYY-MM-DD HH:MM:SS) — Cực k�
 ```
 
 # 📁 Project Directory Structure (Android Java + SQLite)
+```text
 app/
  ├── src/
  │   └── main/
