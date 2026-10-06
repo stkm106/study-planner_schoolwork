@@ -42,13 +42,14 @@ session_type: TEXT ("POMODORO" hoặc "MANUAL")
 duration_minutes: INTEGER (Số phút đã học thực tế: e.g. 25, 50...)
 completed_at: TEXT (Ngày giờ hoàn thành: YYYY-MM-DD HH:MM:SS) — Cực kỳ quan trọng để bạn query xuất biểu đồ tuần/tháng!
 ```
+---
 
 # 📁 Project Directory Structure (Android Java + SQLite)
 ```text
 app/
  ├── src/
  │   └── main/
- │        ├── java/com/example/smartstudyplanner/
+ │        ├── java/com/example/studyplanner/
  │        │    ├── data/                       # 🗄️ LAYER 1: DATA BASE & MODELS
  │        │    │    ├── database/
  │        │    │    │    └── DatabaseHelper.java       # [Person 1] DB Helper (SQLiteOpenHelper: courses, tasks, study_schedules, study_logs)
