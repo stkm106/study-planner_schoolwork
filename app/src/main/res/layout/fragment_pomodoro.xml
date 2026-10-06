@@ -13,7 +13,18 @@
         android:gravity="center_horizontal"
         android:padding="24dp">
 
-        <!-- Tiêu đề màn hình -->
+        <!-- Modal Thống kê -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnOpenStats"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:text="📊 Thống kê"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -23,33 +34,40 @@
             android:textColor="#FFFFFF"
             android:layout_marginTop="16dp"/>
 
-        <!-- Choose Mode (Work / Break) -->
+        <!-- Chọn Mode -->
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/toggleGroupMode"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             app:singleSelection="true"
-            app:checkedButton="@id/btnWorkMode" >
+            app:checkedButton="@id/btnWorkMode"
+            app:selectionRequired="true">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnWorkMode"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Học tập (25m)"
-                android:textColor="#FFFFFF" />
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:backgroundTint="#A43F3F"
+                app:strokeWidth="0dp"
+                app:cornerSize="12dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnBreakMode"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Nghỉ ngơi (5m)"
                 android:textColor="#FFFFFF"
-                app:strokeColor="#FFFFFF" />
+                android:textStyle="bold"
+                android:backgroundTint="#297883"
+                app:strokeWidth="0dp"
+                app:cornerSize="12dp" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
-
         <!-- Timer layout -->
         <RelativeLayout
             android:layout_width="260dp"

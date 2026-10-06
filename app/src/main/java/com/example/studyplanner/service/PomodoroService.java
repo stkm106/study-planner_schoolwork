@@ -59,6 +59,8 @@ public class PomodoroService extends Service {
 
     public void startTimer(long durationMillis, OnTimerListener listener) {
         this.totalTimeInMillis = durationMillis;
+        this.timerListener = listener;
+
         if (timeLeftInMillis <= 0 || timeLeftInMillis > totalTimeInMillis) {
             timeLeftInMillis = totalTimeInMillis;
         }
@@ -68,17 +70,32 @@ public class PomodoroService extends Service {
             public void onTick(long millisUntilFinished) {
                 timeLeftInMillis = millisUntilFinished;
                 updateNotification();
-                if (listener != null) {
-                    listener.onTick(timeLeftInMillis, totalTimeInMillis);
+                if (timerListener != null) {
+                    timerListener.onTick(timeLeftInMillis, totalTimeInMillis);
                 }
             }
 
             @Override
             public void onFinish() {
                 isTimerRunning = false;
+                int durationMins = (int) (totalTimeInMillis / (60 * 1000));
+
+                // lưu vào SQLite khi đếm xong
+                if (durationMins > 0) {
+                    String currentTime = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(new java.util.Date());
+                    com.example.studyplanner.data.model.StudyLog log = new com.example.studyplanner.data.model.StudyLog(
+                            null,
+                            "POMODORO",
+                            durationMins,
+                            currentTime
+                    );
+                    com.example.studyplanner.data.dao.StudyLogDao dao = new com.example.studyplanner.data.dao.StudyLogDao(getApplicationContext());
+                    dao.insertLog(log);
+                }
+
                 updateNotificationText("Đã hết giờ làm việc!");
-                if (listener != null) {
-                    listener.onFinish();
+                if (timerListener != null) {
+                    timerListener.onFinish();
                 }
             }
         }.start();
