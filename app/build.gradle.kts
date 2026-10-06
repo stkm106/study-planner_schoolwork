@@ -46,4 +46,5 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     // Google ML Kit Text Recognition
     // implementation("com.google.mlkit:text-recognition:16.0.0")
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }

@@ -1,17 +1,19 @@
 package com.example.studyplanner.ui.productivity;
 
+import static androidx.core.content.ContentProviderCompat.requireContext;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +36,7 @@ public class PomodoroFragment extends Fragment {
     private MaterialButton btnStartPause;
     private View btnReset;
     private MaterialButtonToggleGroup toggleGroupMode;
+    private View rootView; // Nền toàn màn hình
 
     private static final long WORK_TIME_IN_MILLIS = 25 * 60 * 1000; // 25 phút
     private static final long BREAK_TIME_IN_MILLIS = 5 * 60 * 1000;  // 5 phút
@@ -63,8 +66,9 @@ public class PomodoroFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_pomodoro, container, false);
+        rootView = view;
 
-        // Xin quyền thông báo cho Android 13+
+        // quyền notification cho Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(requireActivity(),
                     new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
@@ -75,6 +79,8 @@ public class PomodoroFragment extends Fragment {
         btnStartPause = view.findViewById(R.id.btnStartPause);
         btnReset = view.findViewById(R.id.btnReset);
         toggleGroupMode = view.findViewById(R.id.toggleGroupMode);
+        Spinner spinnerAssignments = view.findViewById(R.id.spinnerAssignments);
+        View btnOpenStats = view.findViewById(R.id.btnOpenStats);
 
         // Start & Pause
         btnStartPause.setOnClickListener(v -> {
@@ -96,19 +102,52 @@ public class PomodoroFragment extends Fragment {
             }
         });
 
+        //  học tập / nghỉ ngơi
         toggleGroupMode.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
                 if (checkedId == R.id.btnWorkMode) {
                     selectedTimeInMillis = WORK_TIME_IN_MILLIS;
+                    applyThemeColor("#BA4949", "#BA4949");
                 } else if (checkedId == R.id.btnBreakMode) {
                     selectedTimeInMillis = BREAK_TIME_IN_MILLIS;
+                    applyThemeColor("#4C8A96", "#4C8A96");
                 }
+
                 if (isBound) {
                     pomodoroService.resetTimer(selectedTimeInMillis);
                     btnStartPause.setText("Bắt đầu");
                     updateUI(selectedTimeInMillis, selectedTimeInMillis);
                 }
             }
+        });
+
+        // chọn task bài tập
+        com.example.studyplanner.data.database.DatabaseHelper dbHelper = new com.example.studyplanner.data.database.DatabaseHelper(requireContext());
+        android.database.sqlite.SQLiteDatabase db = dbHelper.getReadableDatabase();
+        android.database.Cursor cursor = db.rawQuery("SELECT title FROM assignments", null);
+
+        java.util.List<String> assignmentTitles = new java.util.ArrayList<>();
+        assignmentTitles.add("-- Học tự do (Không có bài tập) --");
+
+        if (cursor.moveToFirst()) {
+            do {
+                assignmentTitles.add(cursor.getString(0));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                assignmentTitles
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerAssignments.setAdapter(adapter);
+
+        // thống kê
+        btnOpenStats.setOnClickListener(v -> {
+            StatisticsFragment statsModal = new StatisticsFragment();
+            statsModal.show(getParentFragmentManager(), "StatisticsBottomSheet");
         });
 
         return view;
@@ -198,5 +237,15 @@ public class PomodoroFragment extends Fragment {
             requireContext().unbindService(connection);
             isBound = false;
         }
+    }
+
+    private void applyThemeColor(String mainHex, String textHex) {
+        int mainColor = android.graphics.Color.parseColor(mainHex);
+        int textColor = android.graphics.Color.parseColor(textHex);
+
+        rootView.setBackgroundColor(mainColor);
+        tvTimer.setTextColor(textColor);
+        btnStartPause.setTextColor(textColor);
+        btnReset.getBackground().setTint(mainColor);
     }
 }
