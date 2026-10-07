@@ -1,12 +1,12 @@
-package com.example.studyplanner.data.database; // Kiểm tra đúng package của project m
+package com.example.studyplanner.data.database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper; // Đảm bảo có dòng import này
+import android.database.sqlite.SQLiteOpenHelper;
 
-// LƯU Ý PHẢI CÓ: extends SQLiteOpenHelper
 public class DatabaseHelper extends SQLiteOpenHelper {
-    private static final String DATABASE_NAME = "StudyPlanner.db";
+
+    private static final String DATABASE_NAME = "study_planner.db";
     private static final int DATABASE_VERSION = 1;
 
     public DatabaseHelper(Context context) {
@@ -14,69 +14,66 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onConfigure(SQLiteDatabase db) {
-        super.onConfigure(db);
-        db.setForeignKeyConstraintsEnabled(true);
-    }
-
-    @Override
     public void onCreate(SQLiteDatabase db) {
-        // 1. Bảng Courses
-        db.execSQL("CREATE TABLE courses (" +
+        // 1. Bảng courses
+        String createCoursesTable = "CREATE TABLE courses (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "code TEXT NOT NULL, " +
-                "name TEXT NOT NULL, " +
-                "color_hex TEXT DEFAULT '#2196F3')");
+                "code TEXT, " +
+                "name TEXT, " +
+                "color_hex TEXT)";
 
-        // 2. Bảng Assignments
-        db.execSQL("CREATE TABLE assignments (" +
+        // 2. Bảng tasks
+        String createTasksTable = "CREATE TABLE tasks (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "course_id INTEGER, " +
                 "title TEXT NOT NULL, " +
                 "description TEXT, " +
-                "deadline TEXT NOT NULL, " +
-                "priority INTEGER DEFAULT 2, " +
+                "category TEXT NOT NULL, " +
                 "status INTEGER DEFAULT 0, " +
-                "estimated_hours REAL DEFAULT 1.0, " +
-                "FOREIGN KEY(course_id) REFERENCES courses(id) ON DELETE SET NULL)");
-
-        // 3. Bảng Examinations
-        db.execSQL("CREATE TABLE examinations (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "course_id INTEGER, " +
-                "title TEXT NOT NULL, " +
-                "exam_date TEXT NOT NULL, " +
+                "priority INTEGER DEFAULT 2, " +
+                "deadline TEXT, " +
                 "location TEXT, " +
-                "duration_minutes INTEGER DEFAULT 60, " +
-                "FOREIGN KEY(course_id) REFERENCES courses(id) ON DELETE CASCADE)");
+                "FOREIGN KEY(course_id) REFERENCES courses(id) ON DELETE SET NULL)";
 
-        // 4. Bảng Study Schedules
-        db.execSQL("CREATE TABLE study_schedules (" +
+        // 3. Bảng study_schedules
+        String createSchedulesTable = "CREATE TABLE study_schedules (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "course_id INTEGER, " +
-                "day_of_week INTEGER NOT NULL, " +
-                "start_time TEXT NOT NULL, " +
-                "end_time TEXT NOT NULL, " +
+                "day_of_week INTEGER, " +
+                "start_time TEXT, " +
+                "end_time TEXT, " +
                 "is_auto_generated INTEGER DEFAULT 0, " +
-                "FOREIGN KEY(course_id) REFERENCES courses(id) ON DELETE CASCADE)");
+                "FOREIGN KEY(course_id) REFERENCES courses(id) ON DELETE CASCADE)";
 
-        // 5. Bảng Study Logs
-        db.execSQL("CREATE TABLE study_logs (" +
+        // 4. Bảng study_logs
+        String createLogsTable = "CREATE TABLE study_logs (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "assignment_id INTEGER, " +
-                "session_type TEXT DEFAULT 'POMODORO', " +
-                "duration_minutes INTEGER NOT NULL, " +
-                "completed_at TEXT NOT NULL, " +
-                "FOREIGN KEY(assignment_id) REFERENCES assignments(id) ON DELETE SET NULL)");
+                "task_id INTEGER, " +
+                "course_id INTEGER, " +
+                "session_type TEXT, " +
+                "duration_minutes INTEGER, " +
+                "completed_at TEXT, " +
+                "FOREIGN KEY(task_id) REFERENCES tasks(id) ON DELETE SET NULL, " +
+                "FOREIGN KEY(course_id) REFERENCES courses(id) ON DELETE SET NULL)";
+
+        db.execSQL(createCoursesTable);
+        db.execSQL(createTasksTable);
+        db.execSQL(createSchedulesTable);
+        db.execSQL(createLogsTable);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS study_logs");
         db.execSQL("DROP TABLE IF EXISTS study_schedules");
-        db.execSQL("DROP TABLE IF EXISTS examinations");
-        db.execSQL("DROP TABLE IF EXISTS assignments");
+        db.execSQL("DROP TABLE IF EXISTS tasks");
         db.execSQL("DROP TABLE IF EXISTS courses");
         onCreate(db);
+    }
+
+    @Override
+    public void onConfigure(SQLiteDatabase db) {
+        super.onConfigure(db);
+        db.setForeignKeyConstraintsEnabled(true);
     }
 }
