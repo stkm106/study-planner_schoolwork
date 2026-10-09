@@ -1,7 +1,5 @@
 package com.example.studyplanner.ui.productivity;
 
-import static androidx.core.content.ContentProviderCompat.requireContext;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -27,6 +25,8 @@ import com.example.studyplanner.service.PomodoroService;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class PomodoroFragment extends Fragment {
@@ -36,7 +36,7 @@ public class PomodoroFragment extends Fragment {
     private MaterialButton btnStartPause;
     private View btnReset;
     private MaterialButtonToggleGroup toggleGroupMode;
-    private View rootView; // Nền toàn màn hình
+    private View rootView;
 
     private static final long WORK_TIME_IN_MILLIS = 25 * 60 * 1000; // 25 phút
     private static final long BREAK_TIME_IN_MILLIS = 5 * 60 * 1000;  // 5 phút
@@ -50,15 +50,15 @@ public class PomodoroFragment extends Fragment {
         public void onServiceConnected(ComponentName name, IBinder service) {
             PomodoroService.LocalBinder binder = (PomodoroService.LocalBinder) service;
             pomodoroService = binder.getService();
-            registerServiceListener();
-            updateUIFromService();
             isBound = true;
-            updateUIFromService();
+            registerServiceListener();
+            syncUIWithServiceState();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             isBound = false;
+            pomodoroService = null;
         }
     };
 
@@ -68,10 +68,11 @@ public class PomodoroFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_pomodoro, container, false);
         rootView = view;
 
-        // quyền notification cho Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ActivityCompat.requestPermissions(requireActivity(),
-                    new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
+            if (getActivity() != null) {
+                ActivityCompat.requestPermissions(getActivity(),
+                        new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
         }
 
         tvTimer = view.findViewById(R.id.tvTimer);
@@ -82,9 +83,13 @@ public class PomodoroFragment extends Fragment {
         Spinner spinnerAssignments = view.findViewById(R.id.spinnerAssignments);
         View btnOpenStats = view.findViewById(R.id.btnOpenStats);
 
-        // Start & Pause
+        // Nút Start / Pause
         btnStartPause.setOnClickListener(v -> {
-            if (!isBound) return;
+            if (!isBound || pomodoroService == null) {
+                Toast.makeText(getContext(), "Đang kết nối Service, vui lòng thử lại...", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             if (pomodoroService.isTimerRunning()) {
                 pomodoroService.pauseTimer();
                 btnStartPause.setText("Tiếp tục");
@@ -93,58 +98,65 @@ public class PomodoroFragment extends Fragment {
             }
         });
 
-        // Reset
+        // Nút Reset thủ công
         btnReset.setOnClickListener(v -> {
-            if (isBound) {
-                pomodoroService.resetTimer(selectedTimeInMillis);
+            if (isBound && pomodoroService != null) {
+                boolean isWork = (toggleGroupMode.getCheckedButtonId() == R.id.btnWorkMode);
+                pomodoroService.resetTimer(selectedTimeInMillis, isWork);
                 btnStartPause.setText("Bắt đầu");
                 updateUI(selectedTimeInMillis, selectedTimeInMillis);
             }
         });
 
-        //  học tập / nghỉ ngơi
+        // 1. Sửa lại Toggle Group Listener để tránh tự reset khi Fragment vừa bind Service
         toggleGroupMode.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (isChecked) {
-                if (checkedId == R.id.btnWorkMode) {
-                    selectedTimeInMillis = WORK_TIME_IN_MILLIS;
-                    applyThemeColor("#BA4949", "#BA4949");
-                } else if (checkedId == R.id.btnBreakMode) {
-                    selectedTimeInMillis = BREAK_TIME_IN_MILLIS;
-                    applyThemeColor("#4C8A96", "#4C8A96");
-                }
+            // CHỈ xử lý khi nút đó được CHỌN (isChecked = true) VÀ không trong quá trình sync UI
+            if (isChecked && isBound && pomodoroService != null) {
+                boolean isWorkMode = (checkedId == R.id.btnWorkMode);
+                long newDuration = isWorkMode ? WORK_TIME_IN_MILLIS : BREAK_TIME_IN_MILLIS;
 
-                if (isBound) {
-                    pomodoroService.resetTimer(selectedTimeInMillis);
+                // Chỉ Reset nếu Mode thực sự bị thay đổi so với Service hiện tại
+                if (pomodoroService.isWorkMode() != isWorkMode || !pomodoroService.isTimerRunning()) {
+                    selectedTimeInMillis = newDuration;
+                    applyThemeColor(isWorkMode ? "#BA4949" : "#4C8A96", isWorkMode ? "#BA4949" : "#4C8A96");
+
+                    pomodoroService.resetTimer(selectedTimeInMillis, isWorkMode);
                     btnStartPause.setText("Bắt đầu");
                     updateUI(selectedTimeInMillis, selectedTimeInMillis);
                 }
             }
         });
 
-        // chọn task bài tập
-        com.example.studyplanner.data.database.DatabaseHelper dbHelper = new com.example.studyplanner.data.database.DatabaseHelper(requireContext());
-        android.database.sqlite.SQLiteDatabase db = dbHelper.getReadableDatabase();
-        android.database.Cursor cursor = db.rawQuery("SELECT title FROM assignments", null);
+        // Load bài tập từ DB
+        List<String> taskTitles = new ArrayList<>();
+        taskTitles.add("-- Học tự do (Không chọn bài tập) --");
 
-        java.util.List<String> assignmentTitles = new java.util.ArrayList<>();
-        assignmentTitles.add("-- Học tự do (Không có bài tập) --");
+        try {
+            com.example.studyplanner.data.database.DatabaseHelper dbHelper =
+                    new com.example.studyplanner.data.database.DatabaseHelper(requireContext());
+            android.database.sqlite.SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        if (cursor.moveToFirst()) {
-            do {
-                assignmentTitles.add(cursor.getString(0));
-            } while (cursor.moveToNext());
+            android.database.Cursor cursor = db.rawQuery("SELECT title FROM tasks WHERE status = 0", null);
+
+            if (cursor.moveToFirst()) {
+                do {
+                    taskTitles.add(cursor.getString(0));
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        cursor.close();
 
         android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_spinner_item,
-                assignmentTitles
+                taskTitles
         );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerAssignments.setAdapter(adapter);
 
-        // thống kê
+        // Thống kê BottomSheet
         btnOpenStats.setOnClickListener(v -> {
             StatisticsFragment statsModal = new StatisticsFragment();
             statsModal.show(getParentFragmentManager(), "StatisticsBottomSheet");
@@ -154,6 +166,8 @@ public class PomodoroFragment extends Fragment {
     }
 
     private void startPomodoroService() {
+        if (getContext() == null || pomodoroService == null) return;
+
         Intent intent = new Intent(getContext(), PomodoroService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             requireContext().startForegroundService(intent);
@@ -173,7 +187,7 @@ public class PomodoroFragment extends Fragment {
             public void onFinish() {
                 if (isAdded()) {
                     btnStartPause.setText("Bắt đầu");
-                    Toast.makeText(getContext(), "Hoàn tất đếm ngược Pomodoro!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Hoàn tất Pomodoro!", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -194,22 +208,40 @@ public class PomodoroFragment extends Fragment {
                 public void onFinish() {
                     if (isAdded()) {
                         btnStartPause.setText("Bắt đầu");
-                        Toast.makeText(getContext(), "Hoàn tất đếm ngược Pomodoro!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Hoàn tất Pomodoro!", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
         }
     }
 
-    private void updateUIFromService() {
+    // ĐỒNG BỘ TRẠNG THÁI HOÀN HẢO KHI MỞ LẠI FRAGMENT (Fix lỗi ô màu trắng)
+    // 2. Sửa lại hàm syncUIWithServiceState chuẩn chỉnh
+    private void syncUIWithServiceState() {
         if (pomodoroService != null) {
+            boolean isWork = pomodoroService.isWorkMode();
+
+            // Cập nhật biến thời gian chuẩn trước
+            selectedTimeInMillis = isWork ? WORK_TIME_IN_MILLIS : BREAK_TIME_IN_MILLIS;
+
+            // Đổi màu theme chuẩn
+            applyThemeColor(isWork ? "#BA4949" : "#4C8A96", isWork ? "#BA4949" : "#4C8A96");
+
+            // Đồng bộ Toggle Button (tránh trigger lại listener thừa)
+            int targetCheckId = isWork ? R.id.btnWorkMode : R.id.btnBreakMode;
+            if (toggleGroupMode.getCheckedButtonId() != targetCheckId) {
+                toggleGroupMode.check(targetCheckId);
+            }
+
+            // Lấy thời gian thực tế đang đếm dở từ Service
             long timeLeft = pomodoroService.getTimeLeftInMillis();
-            updateUI(timeLeft, selectedTimeInMillis);
+            long totalTime = pomodoroService.getTotalTimeInMillis();
+
+            updateUI(timeLeft, totalTime);
             btnStartPause.setText(pomodoroService.isTimerRunning() ? "Tạm dừng" : "Bắt đầu");
         }
     }
 
-    // Progress bar
     private void updateUI(long timeLeft, long totalTime) {
         int minutes = (int) (timeLeft / 1000) / 60;
         int seconds = (int) (timeLeft / 1000) % 60;
@@ -223,8 +255,10 @@ public class PomodoroFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        Intent intent = new Intent(getContext(), PomodoroService.class);
-        requireContext().bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        if (getContext() != null) {
+            Intent intent = new Intent(getContext(), PomodoroService.class);
+            getContext().bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        }
     }
 
     @Override
@@ -234,7 +268,9 @@ public class PomodoroFragment extends Fragment {
             if (pomodoroService != null) {
                 pomodoroService.setOnTimerListener(null);
             }
-            requireContext().unbindService(connection);
+            if (getContext() != null) {
+                getContext().unbindService(connection);
+            }
             isBound = false;
         }
     }
@@ -243,9 +279,11 @@ public class PomodoroFragment extends Fragment {
         int mainColor = android.graphics.Color.parseColor(mainHex);
         int textColor = android.graphics.Color.parseColor(textHex);
 
-        rootView.setBackgroundColor(mainColor);
-        tvTimer.setTextColor(textColor);
-        btnStartPause.setTextColor(textColor);
-        btnReset.getBackground().setTint(mainColor);
+        if (rootView != null) rootView.setBackgroundColor(mainColor);
+        if (tvTimer != null) tvTimer.setTextColor(textColor);
+        if (btnStartPause != null) btnStartPause.setTextColor(textColor);
+        if (btnReset != null && btnReset.getBackground() != null) {
+            btnReset.getBackground().setTint(mainColor);
+        }
     }
 }

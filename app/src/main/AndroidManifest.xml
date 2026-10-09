@@ -24,6 +24,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.academic.AddEditTaskActivity"
+            android:theme="@style/Theme.MaterialComponents.DayNight.Dialog" />
         <service
             android:name=".service.PomodoroService"
             android:enabled="true"
