@@ -88,4 +88,28 @@ public class TaskDao {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         return db.delete("tasks", "id = ?", new String[]{String.valueOf(id)});
     }
+
+    // Lấy thông tin 1 Task theo ID để đổ lên Pop-up Edit
+    public Task getTaskById(int id) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Task task = null;
+
+        Cursor cursor = db.query("tasks", null, "id = ?",
+                new String[]{String.valueOf(id)}, null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            task = new Task();
+            task.setId(cursor.getInt(cursor.getColumnIndexOrThrow("id")));
+            task.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
+            task.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
+            task.setCategory(cursor.getString(cursor.getColumnIndexOrThrow("category")));
+            task.setPriority(cursor.getInt(cursor.getColumnIndexOrThrow("priority")));
+            task.setDeadline(cursor.getString(cursor.getColumnIndexOrThrow("deadline")));
+            task.setLocation(cursor.getString(cursor.getColumnIndexOrThrow("location")));
+            task.setStatus(cursor.getInt(cursor.getColumnIndexOrThrow("status")));
+            cursor.close();
+        }
+
+        return task;
+    }
 }

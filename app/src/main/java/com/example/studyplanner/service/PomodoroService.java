@@ -26,8 +26,13 @@ public class PomodoroService extends Service {
     private CountDownTimer countDownTimer;
 
     private boolean isTimerRunning = false;
-    private long timeLeftInMillis = 25 * 60 * 1000;
-    private long totalTimeInMillis = 25 * 60 * 1000;
+    private boolean isWorkMode = true; // Mặc định true = Work Mode (25m), false = Break Mode (5m)
+
+    private static final long WORK_TIME_IN_MILLIS = 25 * 60 * 1000;
+    private static final long BREAK_TIME_IN_MILLIS = 5 * 60 * 1000;
+
+    private long timeLeftInMillis = WORK_TIME_IN_MILLIS;
+    private long totalTimeInMillis = WORK_TIME_IN_MILLIS;
     private OnTimerListener timerListener;
 
     public void setOnTimerListener(OnTimerListener listener) {
@@ -65,6 +70,10 @@ public class PomodoroService extends Service {
             timeLeftInMillis = totalTimeInMillis;
         }
 
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+
         countDownTimer = new CountDownTimer(timeLeftInMillis, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -80,7 +89,6 @@ public class PomodoroService extends Service {
                 isTimerRunning = false;
                 int durationMins = (int) (totalTimeInMillis / (60 * 1000));
 
-                // lưu vào SQLite khi đếm xong
                 if (durationMins > 0) {
                     String currentTime = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(new java.util.Date());
                     com.example.studyplanner.data.model.StudyLog log = new com.example.studyplanner.data.model.StudyLog(
@@ -93,7 +101,7 @@ public class PomodoroService extends Service {
                     dao.insertLog(log);
                 }
 
-                updateNotificationText("Đã hết giờ làm việc!");
+                updateNotificationText(isWorkMode ? "Đã hết giờ học tập!" : "Đã hết giờ nghỉ ngơi!");
                 if (timerListener != null) {
                     timerListener.onFinish();
                 }
@@ -111,8 +119,9 @@ public class PomodoroService extends Service {
         updateNotificationText("Đã tạm dừng");
     }
 
-    public void resetTimer(long newDurationMillis) {
+    public void resetTimer(long newDurationMillis, boolean isWorkMode) {
         pauseTimer();
+        this.isWorkMode = isWorkMode;
         this.totalTimeInMillis = newDurationMillis;
         this.timeLeftInMillis = newDurationMillis;
         updateNotification();
@@ -148,7 +157,7 @@ public class PomodoroService extends Service {
                 .setContentText(contentText)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentIntent(pendingIntent)
-                .setOnlyAlertOnce(true) // Tránh rung/kêu chuông mỗi giây
+                .setOnlyAlertOnce(true)
                 .setOngoing(true)
                 .build();
     }
@@ -171,13 +180,20 @@ public class PomodoroService extends Service {
         return isTimerRunning;
     }
 
+    public boolean isWorkMode() {
+        return isWorkMode;
+    }
+
     public long getTimeLeftInMillis() {
         return timeLeftInMillis;
     }
 
+    public long getTotalTimeInMillis() {
+        return totalTimeInMillis;
+    }
+
     public interface OnTimerListener {
         void onTick(long timeLeft, long totalTime);
-
         void onFinish();
     }
 }
