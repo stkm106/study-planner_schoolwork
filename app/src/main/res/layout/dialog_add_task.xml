@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
     android:background="#FFFFFF"
     android:padding="24dp">
 
@@ -12,7 +13,7 @@
 
         <TextView
             android:id="@+id/tvDialogTitle"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Create new task"
             android:textSize="24sp"
@@ -20,7 +21,7 @@
             android:textColor="#2D2D44"/>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Fill in the task details below"
             android:textSize="14sp"
@@ -28,7 +29,7 @@
             android:layout_marginBottom="24dp"/>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Category"
             android:textStyle="bold"
@@ -42,7 +43,7 @@
             android:layout_marginBottom="16dp"/>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Task Title *"
             android:textStyle="bold"
@@ -59,7 +60,7 @@
             android:layout_marginBottom="16dp"/>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Description"
             android:textStyle="bold"
@@ -78,21 +79,25 @@
             android:layout_marginBottom="16dp"/>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Related Course (Optional)"
             android:textStyle="bold"
             android:textColor="#2D2D44"
             android:layout_marginBottom="4dp"/>
-        <Spinner
-            android:id="@+id/spCourse"
+        <!-- Đổi Spinner thành EditText để gõ chữ thoải mái -->
+        <EditText
+            android:id="@+id/etCourse"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:background="#F4F5F7"
+            android:hint="Enter course name (optional)"
+            android:paddingHorizontal="12dp"
+            android:inputType="textCapWords"
             android:layout_marginBottom="16dp"/>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Priority"
             android:textStyle="bold"
@@ -106,7 +111,7 @@
             android:layout_marginBottom="16dp"/>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Deadline / Time"
             android:textStyle="bold"
@@ -124,7 +129,7 @@
             android:layout_marginBottom="16dp"/>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Location (Room/Link)"
             android:textStyle="bold"
@@ -152,6 +157,7 @@
                 android:layout_height="50dp"
                 android:layout_weight="1"
                 android:text="Cancel"
+                android:maxLines="1"
                 android:backgroundTint="#F4F5F7"
                 android:textColor="#757575"
                 android:layout_marginEnd="8dp"/>
@@ -162,6 +168,7 @@
                 android:layout_height="50dp"
                 android:layout_weight="1"
                 android:text="Save Task"
+                android:maxLines="1"
                 android:backgroundTint="#2196F3"
                 android:textColor="#FFFFFF"/>
         </LinearLayout>

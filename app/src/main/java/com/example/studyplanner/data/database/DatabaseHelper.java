@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "study_planner.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2; // Nâng version để cập nhật bảng
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -22,10 +22,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "name TEXT, " +
                 "color_hex TEXT)";
 
-        // 2. Bảng tasks
+        // 2. Bảng tasks (Thêm cột course kiểu TEXT)
         String createTasksTable = "CREATE TABLE tasks (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "course_id INTEGER, " +
+                "course TEXT, " +
                 "title TEXT NOT NULL, " +
                 "description TEXT, " +
                 "category TEXT NOT NULL, " +

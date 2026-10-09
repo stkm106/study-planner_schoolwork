@@ -64,10 +64,10 @@ public class CourseListFragment extends Fragment {
     }
 
     private void setupSpinners() {
-        String[] categories = {"All", "ASSIGNMENT", "EXAM", "HOMEWORK", "PROJECT"};
+        String[] categories = {"Assignment", "Exam", "Homework", "Project"};
         spinnerCategoryFilter.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, categories));
 
-        String[] months = {"Today", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+        String[] months = {"Hôm nay", "Tháng 1", "Tháng 2", "Tháng 3","Tháng4","Tháng 5","Tháng 6","Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"};
         spinnerMonthFilter.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, months));
     }
 
