@@ -26,6 +26,7 @@ public class TaskDao {
         } else {
             values.putNull("course_id");
         }
+        values.put("course", task.getCourse()); // Lưu chuỗi tên môn học
         values.put("title", task.getTitle());
         values.put("description", task.getDescription());
         values.put("category", task.getCategory());
@@ -40,27 +41,40 @@ public class TaskDao {
     public List<Task> getTasksByCategory(String category) {
         List<Task> list = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM tasks WHERE category = ? ORDER BY deadline ASC", new String[]{category});
+        Cursor cursor;
+
+        if (category == null || category.equalsIgnoreCase("ALL")) {
+            cursor = db.rawQuery("SELECT * FROM tasks ORDER BY deadline ASC", null);
+        } else {
+            cursor = db.rawQuery("SELECT * FROM tasks WHERE category = ? ORDER BY deadline ASC", new String[]{category});
+        }
 
         if (cursor.moveToFirst()) {
             do {
                 Integer courseId = cursor.isNull(cursor.getColumnIndexOrThrow("course_id")) ?
                         null : cursor.getInt(cursor.getColumnIndexOrThrow("course_id"));
 
-                Task task = new Task(
-                        cursor.getInt(cursor.getColumnIndexOrThrow("id")),
-                        courseId,
-                        cursor.getString(cursor.getColumnIndexOrThrow("title")),
-                        cursor.getString(cursor.getColumnIndexOrThrow("description")),
-                        cursor.getString(cursor.getColumnIndexOrThrow("category")),
-                        cursor.getInt(cursor.getColumnIndexOrThrow("status")),
-                        cursor.getInt(cursor.getColumnIndexOrThrow("priority")),
-                        cursor.getString(cursor.getColumnIndexOrThrow("deadline")),
-                        cursor.getString(cursor.getColumnIndexOrThrow("location"))
-                );
+                Task task = new Task();
+                task.setId(cursor.getInt(cursor.getColumnIndexOrThrow("id")));
+                task.setCourseId(courseId);
+
+                int courseIdx = cursor.getColumnIndex("course");
+                if (courseIdx != -1) {
+                    task.setCourse(cursor.getString(courseIdx));
+                }
+
+                task.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
+                task.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
+                task.setCategory(cursor.getString(cursor.getColumnIndexOrThrow("category")));
+                task.setStatus(cursor.getInt(cursor.getColumnIndexOrThrow("status")));
+                task.setPriority(cursor.getInt(cursor.getColumnIndexOrThrow("priority")));
+                task.setDeadline(cursor.getString(cursor.getColumnIndexOrThrow("deadline")));
+                task.setLocation(cursor.getString(cursor.getColumnIndexOrThrow("location")));
+
                 list.add(task);
             } while (cursor.moveToNext());
         }
+
         cursor.close();
         return list;
     }
@@ -73,6 +87,7 @@ public class TaskDao {
         } else {
             values.putNull("course_id");
         }
+        values.put("course", task.getCourse()); // Cập nhật tên môn học
         values.put("title", task.getTitle());
         values.put("description", task.getDescription());
         values.put("category", task.getCategory());
@@ -100,6 +115,16 @@ public class TaskDao {
         if (cursor != null && cursor.moveToFirst()) {
             task = new Task();
             task.setId(cursor.getInt(cursor.getColumnIndexOrThrow("id")));
+
+            Integer courseId = cursor.isNull(cursor.getColumnIndexOrThrow("course_id")) ?
+                    null : cursor.getInt(cursor.getColumnIndexOrThrow("course_id"));
+            task.setCourseId(courseId);
+
+            int courseIdx = cursor.getColumnIndex("course");
+            if (courseIdx != -1) {
+                task.setCourse(cursor.getString(courseIdx));
+            }
+
             task.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
             task.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
             task.setCategory(cursor.getString(cursor.getColumnIndexOrThrow("category")));

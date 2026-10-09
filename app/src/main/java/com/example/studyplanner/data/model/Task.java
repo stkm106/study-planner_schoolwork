@@ -10,6 +10,7 @@ public class Task {
     private int priority; // 1 = Low, 2 = Medium, 3 = High
     private String deadline; // YYYY-MM-DD HH:MM:SS
     private String location;
+    private String course;
 
     public Task() {}
 
@@ -51,4 +52,12 @@ public class Task {
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
+
+    public String getCourse() {
+        return course;
+    }
+
+    public void setCourse(String course) {
+        this.course = course;
+    }
 }
