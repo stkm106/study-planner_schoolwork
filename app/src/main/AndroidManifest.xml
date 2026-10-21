@@ -27,11 +27,21 @@
         <activity
             android:name=".ui.academic.AddEditTaskActivity"
             android:theme="@style/Theme.MaterialComponents.DayNight.Dialog" />
+
+        <activity
+            android:name=".ui.calendar.SchedulePlannerActivity"
+            android:exported="false" />
+
         <service
             android:name=".service.PomodoroService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="specialUse" />
+
+        <receiver
+            android:name=".service.ReminderReceiver"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

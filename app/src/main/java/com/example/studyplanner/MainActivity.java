@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.example.studyplanner.ui.academic.CourseListFragment;
+import com.example.studyplanner.ui.calendar.CalendarFragment;
 import com.example.studyplanner.ui.productivity.PomodoroFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
@@ -43,6 +44,14 @@ public class MainActivity extends AppCompatActivity {
                     selectedFragment = new CourseListFragment();
                 } else if (itemId == R.id.nav_productivity) {
                     selectedFragment = new PomodoroFragment();
+                }
+                if (selectedFragment != null) {
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, selectedFragment)
+                            .commit();
+                    return true;
+                } else if (itemId == R.id.nav_calendar) {
+                    selectedFragment = new CalendarFragment();
                 }
                 if (selectedFragment != null) {
                     getSupportFragmentManager().beginTransaction()

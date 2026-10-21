@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.studyplanner.R;
 import com.example.studyplanner.data.dao.TaskDao;
 import com.example.studyplanner.data.model.Task;
+import com.example.studyplanner.service.AlarmScheduler;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -164,7 +165,7 @@ public class AddEditTaskActivity extends AppCompatActivity {
     private void saveOrUpdateTask() {
         String title = etTaskTitle.getText().toString().trim();
         String desc = etTaskDesc.getText().toString().trim();
-        String course = etCourse.getText().toString().trim(); // Lấy chữ trong ô Course
+        String course = etCourse.getText().toString().trim();
         String deadline = etDeadline.getText().toString().trim();
         String location = etLocation.getText().toString().trim();
         String category = spCategory.getSelectedItem().toString().toUpperCase();
@@ -180,7 +181,7 @@ public class AddEditTaskActivity extends AppCompatActivity {
             Task newTask = new Task();
             newTask.setTitle(title);
             newTask.setDescription(desc);
-            newTask.setCourse(course); // Lưu tên môn học vào Task
+            newTask.setCourse(course);
             newTask.setCategory(category);
             newTask.setPriority(priority);
             newTask.setDeadline(deadline);
@@ -189,14 +190,29 @@ public class AddEditTaskActivity extends AppCompatActivity {
 
             long result = taskDao.insertTask(newTask);
             if (result > 0) {
-                Toast.makeText(this, "Đã thêm thành công!", Toast.LENGTH_SHORT).show();
+                // ĐẶT BÁO THỨC TỰ ĐỘNG BẰNG ALARMSCHEDULER CỦA P2
+                try {
+                    // Đặt thời gian bắn thông báo test sau 10 giây
+                    long triggerTime = System.currentTimeMillis() + (10 * 1000);
+                    AlarmScheduler.scheduleReminder(
+                            this,
+                            result,
+                            "⏰ Nhắc nhở: " + title,
+                            "Sắp đến hạn " + category + " tại " + (location.isEmpty() ? "Lớp học" : location),
+                            triggerTime
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                Toast.makeText(this, "Đã thêm & Đặt báo thức thành công!", Toast.LENGTH_SHORT).show();
                 finish();
             }
         } else {
             // CẬP NHẬT (SỬA)
             currentTask.setTitle(title);
             currentTask.setDescription(desc);
-            currentTask.setCourse(course); // Cập nhật tên môn học vào Task
+            currentTask.setCourse(course);
             currentTask.setCategory(category);
             currentTask.setPriority(priority);
             currentTask.setDeadline(deadline);
