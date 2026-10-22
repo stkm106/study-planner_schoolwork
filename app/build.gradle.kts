@@ -1,5 +1,6 @@
 plugins {
-    alias(libs.plugins.android.application)
+    id("com.android.application")
+    id("com.google.gms.google-services") // Plugin Firebase của bạn
 }
 
 android {
@@ -40,11 +41,14 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
-    // MPAndroidChart
-    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
-    // Material Design & UI Components (BottomNavigationView, CardView, FloatingActionButton)
+
+    //Material Design & UI Components
     implementation("com.google.android.material:material:1.11.0")
-    // Google ML Kit Text Recognition
-    // implementation("com.google.mlkit:text-recognition:16.0.0")
+    //MPAndroidChart
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    //Google ML Kit Text Recognition
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.0")
+    //Firebase BoM & Cloud Firestore
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+    implementation("com.google.firebase:firebase-firestore-ktx")
 }
