@@ -11,7 +11,7 @@
     <item
         android:id="@+id/nav_productivity"
         android:icon="@android:drawable/ic_menu_today"
-        android:title="Pomodoro &amp; Thống kê" />
+        android:title="Pomodoro" />
     <item
         android:id="@+id/nav_ocr"
         android:icon="@android:drawable/ic_menu_camera"

@@ -37,6 +37,10 @@
             android:name=".ui.academic.AddEditTaskActivity"
             android:theme="@style/Theme.MaterialComponents.DayNight.Dialog" />
 
+        <activity
+            android:name=".ui.calendar.SchedulePlannerActivity"
+            android:exported="false" />
+
         <!-- Dịch vụ Pomodoro -->
         <service
             android:name=".service.PomodoroService"
@@ -53,6 +57,10 @@
             android:name=".ui.sync.SyncSettingsActivity"
             android:exported="false" />
 
+        <receiver
+            android:name=".service.ReminderReceiver"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

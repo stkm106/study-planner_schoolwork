@@ -64,11 +64,20 @@ public class CourseListFragment extends Fragment {
     }
 
     private void setupSpinners() {
-        String[] categories = {"Assignment", "Exam", "Homework", "Project"};
+        String[] categories = {"Tất cả", "Assignment", "Exam", "Homework", "Project"};
         spinnerCategoryFilter.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, categories));
-
-        String[] months = {"Hôm nay", "Tháng 1", "Tháng 2", "Tháng 3","Tháng4","Tháng 5","Tháng 6","Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"};
+        String[] months = {"Hôm nay", "Tháng 1", "Tháng 2", "Tháng 3","Tháng 4","Tháng 5","Tháng 6","Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"};
         spinnerMonthFilter.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, months));
+
+        spinnerCategoryFilter.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                loadTasks();
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
     }
 
     private void setupRecyclerView() {
@@ -78,7 +87,15 @@ public class CourseListFragment extends Fragment {
     }
 
     private void loadTasks() {
-        taskList = taskDao.getTasksByCategory("ASSIGNMENT"); // Hoặc lấy toàn bộ tùy DAO của m
+        if (spinnerCategoryFilter == null || taskDao == null) return;
+
+        String selectedCategory = spinnerCategoryFilter.getSelectedItem().toString();
+        if (selectedCategory.equalsIgnoreCase("Tất cả")) {
+            taskList = taskDao.getTasksByCategory("ALL");
+        } else {
+            taskList = taskDao.getTasksByCategory(selectedCategory.toUpperCase());
+        }
+
         if (taskAdapter != null) {
             taskAdapter.updateData(taskList);
         }

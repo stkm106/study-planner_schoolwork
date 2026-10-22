@@ -137,4 +137,17 @@ public class TaskDao {
 
         return task;
     }
+    public void open() {}
+    public void close() {}
+
+    public List<Task> getAllTasks() {
+        return getTasksByCategory("ALL");
+    }
+
+    public void updateTaskStatus(int id, boolean isCompleted) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("status", isCompleted ? 1 : 0);
+        db.update("tasks", values, "id = ?", new String[]{String.valueOf(id)});
+    }
 }
