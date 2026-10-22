@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Quyền cơ bản và thông báo -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <!-- BỔ SUNG: Quyền Internet bắt buộc để Firebase Cloud Sync hoạt động -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -14,16 +20,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Studyplanner">
+
+        <!-- Màn hình chính -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Màn hình thêm/sửa Task -->
         <activity
             android:name=".ui.academic.AddEditTaskActivity"
             android:theme="@style/Theme.MaterialComponents.DayNight.Dialog" />
@@ -32,11 +41,21 @@
             android:name=".ui.calendar.SchedulePlannerActivity"
             android:exported="false" />
 
+        <!-- Dịch vụ Pomodoro -->
         <service
             android:name=".service.PomodoroService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="specialUse" />
+
+        <!-- BỔ SUNG: Khai báo 2 Activity mới cho phần OCR và Đồng bộ -->
+        <activity
+            android:name=".ui.ocr.OCRScanActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.sync.SyncSettingsActivity"
+            android:exported="false" />
 
         <receiver
             android:name=".service.ReminderReceiver"
